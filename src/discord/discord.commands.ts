@@ -17,19 +17,21 @@ export class DiscordCommands {
     private discordService: DiscordService,
     private devanaService: DevanaService,
   ) {
-    this.logger.log('DiscordCommands constructor');
+    this.logger.log('DiscordCommands initiated');
   }
 
+  // This command is used to create a knowledge base from a message
   @UseInterceptors(AgentAutocompleteInterceptor)
   @SlashCommand({
     name: 'link',
     description: 'Link channel to an agent',
+    // TODO: Set default permissions to admin only
   })
   public async onLink(
     @Context() [interaction]: SlashCommandContext,
     @Options() { channel, agent, permission }: LinkDto,
   ) {
-    this.logger.log('Link command triggered');
+    this.logger.log(`[/link] ${interaction.user.username}`);
 
     if (!channel) {
       return interaction.reply({
@@ -45,6 +47,7 @@ export class DiscordCommands {
       });
     }
 
+    // Get the config message of the guild
     const configMessage = await this.discordService.getConfigMessage(
       interaction.guild,
     );
@@ -56,8 +59,10 @@ export class DiscordCommands {
       });
     }
 
+    // Get the agents from Devana
     const agents = await this.devanaService.getAgents();
 
+    // Find the agent id from the agent name
     const agentId = agents.find((a) => a.name === agent)?.id;
 
     if (!agentId) {
@@ -67,6 +72,7 @@ export class DiscordCommands {
       });
     }
 
+    // Check if the channel is already linked to an agent
     const agentExists = configMessage.embeds[0].fields.some(
       (field) => field.name === channel.id,
     );
@@ -78,6 +84,9 @@ export class DiscordCommands {
       });
     }
 
+    // Modifying the embed of the config message to add the
+    // channel id and the agent id in order to check later if
+    // the channel is linked to an agent
     const embed = configMessage.embeds[0];
 
     embed.fields.push({
@@ -85,6 +94,7 @@ export class DiscordCommands {
       value: agentId,
     });
 
+    // If a permission is provided, add it to the embed
     if (permission) {
       embed.fields.push({
         name: `${channel.id}-permission`,
@@ -92,10 +102,12 @@ export class DiscordCommands {
       });
     }
 
+    // Edit the config message with the new embed
     await configMessage.edit({
       embeds: [embed],
     });
-
+    // This is used to have a cache of the config message
+    // in order to not refetch it every time
     this.discordService.setConfigMessage(configMessage);
 
     return interaction.reply({
@@ -106,15 +118,17 @@ export class DiscordCommands {
     });
   }
 
+  // This command is used to unlink a channel from an agent
   @SlashCommand({
     name: 'unlink',
     description: 'Unlink channel from an agent',
+    // TODO: Set default permissions to admin only
   })
   public async onUnlink(
     @Context() [interaction]: SlashCommandContext,
     @Options() { channel }: UnLinkDto,
   ) {
-    this.logger.log('Unlink command triggered');
+    this.logger.log(`[/unlink] ${interaction.user.username}`);
 
     if (!channel) {
       return interaction.reply({
@@ -123,6 +137,7 @@ export class DiscordCommands {
       });
     }
 
+    // Get the config message of the guild
     const configMessage = await this.discordService.getConfigMessage(
       interaction.guild,
     );
@@ -134,6 +149,7 @@ export class DiscordCommands {
       });
     }
 
+    // Check if the channel is linked to an agent
     const embed = configMessage.embeds[0];
 
     const agentExists = embed.fields.some((field) => field.name === channel.id);
@@ -145,16 +161,20 @@ export class DiscordCommands {
       });
     }
 
+    // Remove the channel id from the embed
+    // in order to check later if the channel is linked to an agent
     const fieldIndex = embed.fields.findIndex((field) =>
       field.name.startsWith(channel.id),
     );
 
     embed.fields.splice(fieldIndex, 1);
 
+    // Edit the config message with the new embed
     await configMessage.edit({
       embeds: [embed],
     });
-
+    // This is used to have a cache of the config message
+    // in order to not refetch it every time
     this.discordService.setConfigMessage(configMessage);
 
     return interaction.reply({
@@ -163,18 +183,22 @@ export class DiscordCommands {
     });
   }
 
+  // This command is used to delete an agent or a knowledge base
+  // We use interceptors to autocomplete the agent and knowledge base names
   @UseInterceptors(AgentAutocompleteInterceptor)
   @UseInterceptors(KnowledgeAutocompleteInterceptor)
   @SlashCommand({
     name: 'delete',
     description: 'Delete an agent or a knowledge base',
+    // TODO: Set default permissions to admin only
   })
   public async onDelete(
     @Context() [interaction]: SlashCommandContext,
     @Options() { agent, knowledgeBase }: DeleteDto,
   ) {
-    this.logger.log('Delete command triggered');
+    this.logger.log(`[/delete] ${interaction.user.username}`);
 
+    // If none are provided we dont want to execute the command
     if (!agent && !knowledgeBase) {
       return interaction.reply({
         content: 'You must provide an agent or a knowledge base',
@@ -182,6 +206,7 @@ export class DiscordCommands {
       });
     }
 
+    // If both are provided we dont want to execute the command
     if (agent && knowledgeBase) {
       return interaction.reply({
         content: 'You must provide an agent or a knowledge base',
@@ -190,6 +215,8 @@ export class DiscordCommands {
     }
 
     if (agent) {
+      // Get all the agents to check if the agent exists
+      // TODO: check if current agent is linked to the channel
       const agents = await this.devanaService.getAgents();
 
       const agentId = agents.find((a) => a.name === agent)?.id;
@@ -210,6 +237,7 @@ export class DiscordCommands {
     }
 
     if (knowledgeBase) {
+      // Get the knowledge base to check if it exists and use his datas
       const knowledgeBaseExists = await this.devanaService.getKnowledgeBase(
         knowledgeBase,
       );
@@ -230,21 +258,31 @@ export class DiscordCommands {
     }
   }
 
+  // This command is used to create a configuration message
   @SlashCommand({
     name: 'configuration',
     description: 'Configure the bot',
+    // TODO: Set default permissions to admin only
   })
   public async onConfig(@Context() [interaction]: SlashCommandContext) {
-    this.logger.log('Config command triggered');
+    this.logger.log(`[/configuration] ${interaction.user.username}`);
 
+    // Get the config message of the guild
     const configMessage = await this.discordService.getConfigMessage(
       interaction.guild,
     );
 
+    // If the config message exists we delete it
+    // We do that to prevent any errors further in the code
+    // We could cancel this but if the users wants to change channel
+    // We need to delete the old one
     if (configMessage) {
       await configMessage.delete();
     }
 
+    // Create the config message
+    // This message contains the how to use
+    // We could see later if we want this in an another command
     const message = await interaction.channel.send({
       embeds: [
         new EmbedBuilder({
@@ -285,12 +323,15 @@ export class DiscordCommands {
       ],
     });
 
+    // We pin the message in order to find it more easily
+    // (quite literaly without fetching all the messages from the guild)
     await message.pin('Pin is mandatory to find configuration later.');
 
     const lmessage = await interaction.channel.messages.fetch({
       limit: 1,
     });
 
+    // We delete the pinned message (u know the thing that says "Successfully pinned message")
     lmessage.last().delete();
 
     return interaction.reply({

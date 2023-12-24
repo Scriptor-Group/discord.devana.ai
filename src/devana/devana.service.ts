@@ -4,9 +4,11 @@ import { ConfigService } from '@nestjs/config';
 import { Attachment, Collection, Snowflake } from 'discord.js';
 import { firstValueFrom } from 'rxjs';
 
+// Devana service is used to communicate with Devana API
 @Injectable()
 export class DevanaService {
   public token: string;
+  // Default models are used to validate model provided by user
   private defaultModels = {
     GPT4: 'GPT4',
     GPT35: 'GPT35',
@@ -33,12 +35,20 @@ export class DevanaService {
     private configService: ConfigService,
   ) {}
 
+  /**
+   * Will be used to get token from Devana API using credentials provided in .env file
+   * @param force Boolean will regenerate a new token if set to true
+   * @returns String token
+   */
   async getToken(force = false) {
+    // If token is already set and force is false, return token
     if (this.token && !force) {
       return this.token;
     }
 
+    // If token is not set or force is true, generate a new token
     try {
+      // Requesting Devana via graphql requests
       const request = this.httpService.post('graphql', {
         operationName: 'Login',
         variables: {
@@ -54,6 +64,7 @@ export class DevanaService {
 
       this.token = response.data.login;
 
+      // Setting token in axios headers for future requests
       this.httpService.axiosRef.defaults.headers.common.Authorization = `Bearer ${this.token}`;
 
       return response.data.login;
@@ -62,6 +73,13 @@ export class DevanaService {
     }
   }
 
+  /**
+   * Will be used to ask Devana API to ask an agent a question
+   * @param agentId String agent id
+   * @param prompt String question
+   * @param chatId String chat id (not necessary)
+   * @returns Promise<any>
+   */
   async askAgent(agentId: string, prompt: string, chatId?: string) {
     try {
       const request = this.httpService.get(`${agentId}`, {
@@ -83,6 +101,13 @@ export class DevanaService {
     }
   }
 
+  /**
+   * Will be used to get all chats with agents from Devana API
+   * @param take Number number of chats to get
+   * @param skip Number number of chats to skip
+   * @param search String search query
+   * @returns Promise<any>
+   */
   async getChats(take = 20, skip = 0, search = '') {
     try {
       const request = this.httpService.post('graphql', {
@@ -108,6 +133,11 @@ export class DevanaService {
     }
   }
 
+  /**
+   * Will be used to get all agents from Devana API
+   * @param search String search query
+   * @returns Promise<any>
+   */
   async getAgents(search = '') {
     try {
       const request = this.httpService.post('graphql', {
@@ -131,6 +161,11 @@ export class DevanaService {
     }
   }
 
+  /**
+   * Delete an agent from devana api
+   * @param id String agent id
+   * @returns Promise<any>
+   */
   async deleteAgent(id: string) {
     try {
       const request = this.httpService.post('graphql', {
@@ -149,6 +184,11 @@ export class DevanaService {
     }
   }
 
+  /**
+   * Get a knowledge base from devana api
+   * @param id String knowledge base id
+   * @returns Promise<any>
+   */
   public async getKnowledgeBase(id: string) {
     try {
       const request = this.httpService.post('graphql', {
@@ -176,6 +216,11 @@ export class DevanaService {
     }
   }
 
+  /**
+   * Get all knowledge bases from devana api
+   * @param search String search query
+   * @returns Promise<any>
+   */
   public async getKnowledgeBases(search = '') {
     try {
       const request = this.httpService.post('graphql', {
@@ -209,6 +254,11 @@ export class DevanaService {
     }
   }
 
+  /**
+   * Delete a knowledge base from devana api
+   * @param id String knowledge base id
+   * @returns Promise<any>
+   */
   public async deleteKnowledgeBase(id: string) {
     try {
       const request = this.httpService.post('graphql', {
@@ -227,6 +277,10 @@ export class DevanaService {
     }
   }
 
+  /**
+   * Get all models from devana api
+   * @returns Promise<any>
+   */
   public async getModels() {
     try {
       const request = this.httpService.post('graphql', {
@@ -243,8 +297,7 @@ export class DevanaService {
 
       const { data: response } = await firstValueFrom(request);
 
-      console.log(response);
-
+      // Because the response is an enum, we convert it back again as an object
       return Object.fromEntries(
         response.data.__type.enumValues.map((model) => [
           model.name,
@@ -256,6 +309,16 @@ export class DevanaService {
     }
   }
 
+  /**
+   * Create an agent from devana api
+   * @param name String agent name
+   * @param description String agent description
+   * @param model String agent model
+   * @param knowledgeBases String[] agent knowledge bases
+   * @param options Object agent options
+   * @param identity Object agent identity
+   * @returns Promise<any>
+   */
   public async createAgent({
     name,
     description,
@@ -357,15 +420,19 @@ export class DevanaService {
 
       const { data: response } = await firstValueFrom(request);
 
-      console.log(response);
-
       return response.data.upsertMyIAs;
     } catch {
       throw new HttpException({ message: 'Error creating agent.' }, 500);
     }
   }
 
+  /**
+   * Create a knowledge base skeleton from devana api
+   * @param name String knowledge base name
+   * @returns Promise<any>
+   */
   public async createKnowledgeBaseSkeleton(name: string) {
+    // Devana API needs to have the skeleton before hydrating knowledge with datas
     try {
       const request = this.httpService.post('graphql', {
         operationName: 'createFolder',
@@ -386,15 +453,25 @@ export class DevanaService {
     }
   }
 
+  /**
+   * Upload knowledge base documents to devana api
+   * @param knowledgeBaseId String knowledge base id
+   * @param attachments Collection<Snowflake, Attachment> attachments to upload
+   * @returns Promise<any>
+   */
   public async uploadKnowledgeBaseDocuments(
     knowledgeBaseId: string,
     attachments: Collection<Snowflake, Attachment>,
   ) {
+    // Formdata will be used to set all our files
     const formData = new FormData();
 
+    // We loop through all attachments and add them to formdata
     try {
       await Promise.all(
         attachments.map(async ({ url }) => {
+          // We fetch the attachment from discord and turn them into blob
+          // Blob is a file format used to upload files as binary
           const response = await fetch(url);
           const blob = await response.blob();
           formData.append('file', blob);
@@ -419,6 +496,12 @@ export class DevanaService {
     }
   }
 
+  /**
+   * Upload knowledge base document to devana api
+   * @param knowledgeBaseId String knowledge base id
+   * @param blob Blob file to upload
+   * @returns Promise<any>
+   */
   public async uploadKnowledgeBaseDocument(
     knowledgeBaseId: string,
     blob: Blob,
@@ -442,6 +525,12 @@ export class DevanaService {
     }
   }
 
+  /**
+   * Upload knowledge base websites to devana api
+   * @param knowledgeBaseId String knowledge base id
+   * @param url String[] urls to upload
+   * @returns Promise<any>
+   */
   public async uploadKnowledgeBaseWebsites(
     knowledgeBaseId: string,
     url: string[],
@@ -475,20 +564,29 @@ export class DevanaService {
 
       return response.data.upsertWebsite;
     } catch (error) {
-      console.log(error);
       throw new HttpException({ message: error.message }, error.status);
     }
   }
 
+  /**
+   * Create a knowledge base from devana api
+   * @param name String knowledge base name
+   * @param content String knowledge base content
+   * @param attachments Collection<Snowflake, Attachment> knowledge base attachments
+   * @returns Promise<any>
+   */
   public async createKnowledgeBase(
     name: string,
     content: string,
     attachments: Collection<Snowflake, Attachment>,
   ) {
+    // Create the skeleton in order to hydrate it further on
     const knowledgeBase = await this.createKnowledgeBaseSkeleton(name);
 
+    // Get all the urls contained in the message to hydrate them
     const urls = content.match(/https?:\/\/[^\s]+/g);
 
+    // Hydrate skeleton with urls, content and attachments
     if (urls) {
       await this.uploadKnowledgeBaseWebsites(knowledgeBase.id, urls);
     }

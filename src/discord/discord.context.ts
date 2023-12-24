@@ -9,6 +9,7 @@ import {
 import { DiscordService } from './discord.service';
 import { DevanaService } from 'src/devana/devana.service';
 
+// A context is a class used to handle the context menu commands
 @Injectable()
 export class DiscordContext {
   private readonly logger = new Logger(DiscordContext.name);
@@ -17,16 +18,21 @@ export class DiscordContext {
     private discordService: DiscordService,
     private devanaService: DevanaService,
   ) {
-    this.logger.log('DiscordContext constructor');
+    this.logger.log('DiscordContext initiated');
   }
 
+  // Create Agent context menu command is used to create a new agent from a knowledge base message
   @MessageCommand({
     name: 'Create agent',
+    // TODO: Add default permission for admin only
   })
   public async createAgentFromMessage(
     @Context() [interaction]: MessageCommandContext,
     @TargetMessage() message: Message,
   ) {
+    // Check if the targeted message is from the bot
+    // and check if the targeted message has a knowledge-id field
+    // this will tell us if the targeted message is a knowledge base message
     if (
       message.author.id !== this.discordService.client.user.id &&
       !message.embeds.some((embed) =>
@@ -41,6 +47,8 @@ export class DiscordContext {
       content: `Creating agent`,
     });
 
+    // Get the knowledge base id from the targeted message and use it to get
+    // the knowledge base from the devana api
     const knowledgeBaseId = message.embeds
       .find((embed) =>
         embed.fields.some((field) => field.name === 'knowledge-id'),
@@ -56,6 +64,7 @@ export class DiscordContext {
         content: `Knowledge base ${knowledgeBaseId} not found`,
       });
 
+    // Create the agent from the knowledge base
     const agent = await this.devanaService.createAgent({
       name: knowledgeBase.name,
       description: knowledgeBase.name,
@@ -80,22 +89,30 @@ export class DiscordContext {
     });
   }
 
+  // Create Knowledge base context menu command is used to create a new knowledge base from a message
   @MessageCommand({
     name: 'Create knowledge base',
+    // TODO: Add default permission for admin only
   })
   public async createKnowledgeBaseFromMessage(
     @Context() [interaction]: MessageCommandContext,
     @TargetMessage() message: Message,
   ) {
+    // Quite straightforward, check if the targeted message is from the bot
     if (message.author.id === this.discordService.client.user.id)
       return interaction.reply({
         content: `I can't create knowledge base from my own messages`,
       });
 
+    // We let the user know that we are creating the knowledge base
+    // this is set because it can take quite a while
     interaction.reply({
       content: `Creating knowledge base`,
+      ephemeral: true,
     });
 
+    // Here we use a default Devana AI to ask it to get a short description
+    // of the message content, it will be used as the knowledge base name
     const question = await this.devanaService.askAgent(
       'clqh6r78100200trlvthv3sf7',
       encodeURIComponent(
@@ -103,6 +120,7 @@ export class DiscordContext {
       ),
     );
 
+    // Here u go we create the knowledge base me lord
     const knowledgeBase = await this.devanaService.createKnowledgeBase(
       question.text,
       message.content,
