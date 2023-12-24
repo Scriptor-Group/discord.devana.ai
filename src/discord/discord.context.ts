@@ -43,6 +43,7 @@ export class DiscordContext {
         content: `I can only create agent from my own knowledge base messages`,
       });
 
+    // We let the user know that we are creating the agent
     interaction.reply({
       content: `Creating agent`,
     });
