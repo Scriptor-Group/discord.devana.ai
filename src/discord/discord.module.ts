@@ -6,6 +6,7 @@ import { DiscordCommands } from './discord.commands';
 import { AppService } from 'src/app.service';
 import { HttpModule } from '@nestjs/axios';
 import { DevanaModule } from 'src/devana/devana.module';
+import { DiscordContext } from './discord.context';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { DevanaModule } from 'src/devana/devana.module';
   ],
   providers: [
     DiscordCommands,
+    DiscordContext,
     DiscordGateway,
     DiscordService,
     DiscordModal,

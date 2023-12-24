@@ -54,17 +54,55 @@ export class DevanaService {
 
       this.token = response.data.login;
 
-      this.httpService.axiosRef.interceptors.request.use(
-        (config) => {
-          config.headers.Authorization = `Bearer ${this.token}`;
-          return config;
-        },
-        (error) => {
-          return Promise.reject(error);
-        },
-      );
+      this.httpService.axiosRef.defaults.headers.common.Authorization = `Bearer ${this.token}`;
 
       return response.data.login;
+    } catch (error) {
+      throw new HttpException({ message: error.message }, error.status);
+    }
+  }
+
+  async askAgent(agentId: string, prompt: string, chatId?: string) {
+    try {
+      const request = this.httpService.get(`${agentId}`, {
+        params: {
+          prompt,
+          chatId: chatId || '',
+          files: '',
+        },
+        headers: {
+          Authorization: `Bearer ${this.configService.get('DEVANA_API_KEY')}`,
+        },
+      });
+
+      const { data: response } = await firstValueFrom(request);
+
+      return response;
+    } catch {
+      throw new HttpException({ message: '' }, 500);
+    }
+  }
+
+  async getChats(take = 20, skip = 0, search = '') {
+    try {
+      const request = this.httpService.post('graphql', {
+        operationName: 'GetHistoricalConv',
+        variables: { take, skip, search },
+        query: `query GetHistoricalConv($take: Int, $skip: Int, $search: String) {
+          getHistoricalConv(take: $take, skip: $skip, search: $search) {
+            edges {
+              id
+              message
+              parentId
+              iaId
+            }
+          }
+        }`,
+      });
+
+      const { data: response } = await firstValueFrom(request);
+
+      return response.data.getHistoricalConv.edges;
     } catch (error) {
       throw new HttpException({ message: error.message }, error.status);
     }
@@ -88,6 +126,51 @@ export class DevanaService {
       const { data: response } = await firstValueFrom(request);
 
       return response.data.getAllMyIAs.edges;
+    } catch (error) {
+      throw new HttpException({ message: error.message }, error.status);
+    }
+  }
+
+  async deleteAgent(id: string) {
+    try {
+      const request = this.httpService.post('graphql', {
+        operationName: 'DeleteMyIA',
+        variables: { id },
+        query: `mutation DeleteMyIA($id: ID!) {
+          deleteMyIAs(id: $id)
+        }`,
+      });
+
+      const { data: response } = await firstValueFrom(request);
+
+      return response.data.deleteMyIA;
+    } catch (error) {
+      throw new HttpException({ message: error.message }, error.status);
+    }
+  }
+
+  public async getKnowledgeBase(id: string) {
+    try {
+      const request = this.httpService.post('graphql', {
+        operationName: 'GetFolder',
+        variables: { id },
+        query: `query GetFolder($id: String!) {
+          getFolder(id: $id) {
+            id
+            name
+            ias {
+              edges {
+                id
+                name
+              }
+            }
+          }
+        }`,
+      });
+
+      const { data: response } = await firstValueFrom(request);
+
+      return response.data.getFolder;
     } catch (error) {
       throw new HttpException({ message: error.message }, error.status);
     }
@@ -126,11 +209,29 @@ export class DevanaService {
     }
   }
 
+  public async deleteKnowledgeBase(id: string) {
+    try {
+      const request = this.httpService.post('graphql', {
+        operationName: 'DeleteFolder',
+        variables: { id },
+        query: `mutation DeleteFolder($id: String!) {
+          deleteFolder(id: $id)
+        }`,
+      });
+
+      const { data: response } = await firstValueFrom(request);
+
+      return response.data.deleteFolder;
+    } catch (error) {
+      throw new HttpException({ message: error.message }, error.status);
+    }
+  }
+
   public async getModels() {
     try {
       const request = this.httpService.post('graphql', {
         operationName: 'GetModels',
-        query: `query GetModels() {
+        query: `query GetModels {
           __type(name: "TypeLLMEnum") {
             name
             enumValues {
@@ -142,8 +243,13 @@ export class DevanaService {
 
       const { data: response } = await firstValueFrom(request);
 
+      console.log(response);
+
       return Object.fromEntries(
-        response.__type.enumValues.map((model) => [model.name, model.name]),
+        response.data.__type.enumValues.map((model) => [
+          model.name,
+          model.name,
+        ]),
       );
     } catch (error) {
       throw new HttpException({ message: error.message }, error.status);
@@ -154,14 +260,14 @@ export class DevanaService {
     name,
     description,
     model,
-    knowledgeBase,
+    knowledgeBases,
     options,
     identity,
   }: {
     name: string;
     description?: string;
     model?: string;
-    knowledgeBase?: string[];
+    knowledgeBases?: string[];
     options?: {
       sources?: boolean;
       public?: boolean;
@@ -177,6 +283,8 @@ export class DevanaService {
     if (model && !models[model]) {
       throw new HttpException({ message: 'Invalid model provided.' }, 400);
     }
+
+    console.log('Creating agent');
 
     try {
       const request = this.httpService.post('graphql', {
@@ -194,7 +302,7 @@ export class DevanaService {
           freeLevel: identity?.type || 'FREEDOM',
           model: model || 'GPT4',
           iaType: 'ASSISTANT',
-          folderIds: knowledgeBase || [],
+          folderIds: knowledgeBases || [],
           showSources: options?.sources || false,
           publicChat: options?.public || false,
           connectWeb: options?.internet || false,
@@ -249,6 +357,8 @@ export class DevanaService {
 
       const { data: response } = await firstValueFrom(request);
 
+      console.log(response);
+
       return response.data.upsertMyIAs;
     } catch {
       throw new HttpException({ message: 'Error creating agent.' }, 500);
@@ -259,7 +369,7 @@ export class DevanaService {
     try {
       const request = this.httpService.post('graphql', {
         operationName: 'createFolder',
-        variables: { name },
+        variables: { name: name.replace(/[^A-Za-z0-9\séèà]/g, '') },
         query: `mutation createFolder($name: String!, $id: String) {
           upsetFolder(name: $name, id: $id) {
             id
@@ -271,16 +381,12 @@ export class DevanaService {
       const { data: response } = await firstValueFrom(request);
 
       return response.data.upsetFolder;
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  public async upsertKnowledgeBaseDocuments({}: KnowledgeBaseDocument[]) {}
-
-  public async upsertKnowledgeBaseSource({}: KnowledgeBaseSource) {}
-
-  public async createKnowledgeBase({}) {}
-
-  public async uploadKnowledgeBaseDocument(
+  public async uploadKnowledgeBaseDocuments(
     knowledgeBaseId: string,
     attachments: Collection<Snowflake, Attachment>,
   ) {
@@ -311,5 +417,87 @@ export class DevanaService {
     } catch (error) {
       throw new HttpException({ message: error.message }, error.status);
     }
+  }
+
+  public async uploadKnowledgeBaseDocument(
+    knowledgeBaseId: string,
+    blob: Blob,
+  ) {
+    const formData = new FormData();
+
+    formData.append('file', blob);
+
+    try {
+      const request = this.httpService.post('api/upload', formData, {
+        headers: {
+          Folder: knowledgeBaseId,
+        },
+      });
+
+      const { data: response } = await firstValueFrom(request);
+
+      return response.ids;
+    } catch (error) {
+      throw new HttpException({ message: error.message }, error.status);
+    }
+  }
+
+  public async uploadKnowledgeBaseWebsites(
+    knowledgeBaseId: string,
+    url: string[],
+  ) {
+    const inputs = url.map((url) => ({
+      url,
+      name: url.replace(/[^A-Za-z0-9\séèà\.]/g, ''),
+      origin: 'WEBSITE',
+      depth: 2,
+      recurrence: 'NEVER',
+    }));
+
+    try {
+      const request = this.httpService.post('graphql', {
+        operationName: 'upsertWebsite',
+        variables: {
+          foldersId: knowledgeBaseId,
+          inputs,
+        },
+        query: `mutation upsertWebsite($foldersId: ID!, $inputs: [TypeWebsiteInputs!]) {
+          upsertWebsite(inputs: $inputs, foldersId: $foldersId) {
+            id
+            name
+            url
+            origin
+          }
+        }`,
+      });
+
+      const { data: response } = await firstValueFrom(request);
+
+      return response.data.upsertWebsite;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException({ message: error.message }, error.status);
+    }
+  }
+
+  public async createKnowledgeBase(
+    name: string,
+    content: string,
+    attachments: Collection<Snowflake, Attachment>,
+  ) {
+    const knowledgeBase = await this.createKnowledgeBaseSkeleton(name);
+
+    const urls = content.match(/https?:\/\/[^\s]+/g);
+
+    if (urls) {
+      await this.uploadKnowledgeBaseWebsites(knowledgeBase.id, urls);
+    }
+    await this.uploadKnowledgeBaseDocument(
+      knowledgeBase.id,
+      new Blob([content], { type: 'text/plain' }),
+    );
+    await this.uploadKnowledgeBaseDocuments(knowledgeBase.id, attachments);
+
+    return knowledgeBase;
   }
 }
