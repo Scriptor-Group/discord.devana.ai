@@ -1,0 +1,61 @@
+{
+  "devana": {
+    "service": {
+      "INTERNAL_SERVER_ERROR": "Internal server error",
+      "FETCH_ERROR": "Error while fetching data",
+      "UPLOAD_ERROR": "Upload failed",
+      "INVALID_MODEL": "Invalid model"
+    }
+  },
+  "discord": {
+    "commands": {
+      "link": {
+        "MISSING_CHANNEL": "You must specify a channel",
+        "MISSING_AGENT": "You must specify an agent",
+        "MISSING_CONFIG": "Missing configuration",
+        "AGENT_NOT_FOUND": "Agent %agent% not found",
+        "ALREADY_LINKED": "Channel %channel% is already linked to an agent",
+        "LINKED": "Channel %channel% has been linked to agent %agent% %permission%"
+      },
+      "unlink": {
+        "MISSING_CHANNEL": "You must specify a channel",
+        "MISSING_CONFIG": "Missing configuration",
+        "NOT_LINKED": "Channel %channel% is not linked to an agent",
+        "UNLINKED": "Channel %channel% has been unlinked"
+      },
+      "delete": {
+        "MISSING_KNOWLEDGE_OR_AGENT": "You must specify a knowledge or an agent",
+        "AGENT_NOT_FOUND": "Agent %agent% not found",
+        "AGENT_DELETED": "Agent %agent% has been deleted",
+        "KNOWLEDGE_NOT_FOUND": "Knowledge %knowledge% not found",
+        "KNOWLEDGE_DELETED": "Knowledge %knowledge% has been deleted"
+      },
+      "configuration": {
+        "CONFIG_TITLE": "DO NOT DELETE, MODIFY OR UNPIN THIS MESSAGE",
+        "CONFIG_DESCRIPTION": "This is the configuration message the %bot% bot will use.\nIn order to edit this configuration use the context menu on any messages or use commands.\n\nContext menu :\n1. Right click on the message\n2. Hover over \"Apps\"\n3. Select \"Create agent\" or \"Create knowledge base\"\n   - \"Create knowledge base\" will create a new knowledge base from the messages and the attachments of the message you clicked on.\n   - \"Create agent\" will create a new agent from the aknowledgment message of knowledge base creation automaticaly sent by the bot after the creation of the knowledge base\n\nCommands :\n1. /link\n   - This command will link the channel to the agent you want to use.\n2. /unlink\n   - This command will unlink the channel from the agent.\n3. /delete\n   - This command will delete either an agent or a knowledge base.\n\nIf you want to edit bot context menu or commands permissions go to Server Settings > Integrations > Devana\n\nThanks for using Devana!",
+        "CONFIG_PIN": "Pin is mandatory to find configuration later.",
+        "CONFIG_CREATED": "Configuration message has been created"
+      }
+    },
+    "context": {
+      "create_agent": {
+        "OWN_MESSAGE_ERROR": "I can't create an agent from my messages",
+        "LOADING_CREATE_AGENT": "Creating agent...",
+        "KNOWLEDGE_NOT_FOUND": "Knowledge base not found",
+        "EMBED_CREATED_TITLE": "Agent created",
+        "EMBED_CREATED_DESCRIPTION": "Agent %agent% has been created from knowledge base %knowledge%"
+      },
+      "create_knowledge": {
+        "OWN_MESSAGE_ERROR": "I can't create a knowledge base from my messages",
+        "LOADING_CREATE_KNOWLEDGE": "Creating knowledge base...",
+        "EMBED_CREATED_TITLE": "Knowledge base created",
+        "EMBED_CREATED_DESCRIPTION": "Knowledge base %knowledge% has been created from message %message%"
+      }
+    },
+    "gateway": {
+      "message_create": {
+        "THREAD_ANNOUNCE": "This message is automaticaly sent. In order to continue the discussion mention me."
+      }
+    }
+  }
+}

@@ -1,12 +1,10 @@
 {
   "devana": {
     "service": {
-      "error": {
-        "INTERNAL_SERVER_ERROR": "Erreur interne du serveur",
-        "FETCH_ERROR": "Erreur de récupération",
-        "UPLOAD_ERROR": "Erreur de téléversement",
-        "INVALID_MODEL": "Modèle invalide"
-      }
+      "INTERNAL_SERVER_ERROR": "Erreur interne du serveur",
+      "FETCH_ERROR": "Erreur de récupération",
+      "UPLOAD_ERROR": "Erreur de téléversement",
+      "INVALID_MODEL": "Modèle invalide"
     }
   },
   "discord": {
@@ -34,9 +32,29 @@
       },
       "configuration": {
         "CONFIG_TITLE": "NE PAS SUPPRIMER MODIFER OU DESEPINGLER CE MESSAGE",
-        "CONFIG_DESCRIPTION": "Ceci est le message de configuration que le bot ${this.discordService.client.user.displayName} utilisera.\nPour modifier cette configuration, utilisez le menu contextuel sur n'importe quel message ou utilisez des commandes.\n\nMenu contextuel :\n1. Cliquez avec le bouton droit sur le message\n2. Passez la souris sur \"Applications\"\n3. Sélectionnez \"Créer un agent\" ou \"Créer une base de connaissances\"\n   - \"Créer une base de connaissances\" créera une nouvelle base de connaissances à partir des messages et des pièces jointes du message sur lequel vous avez cliqué.\n   - \"Créer un agent\" créera un nouvel agent à partir du message d'acquittement de la création de la base de connaissances envoyé automatiquement par le bot après la création de la base de connaissances\n\nCommandes :\n1. /link\n   - Cette commande liera le salon au agent que vous souhaitez utiliser.\n2. /unlink\n   - Cette commande déliera le salon de l'agent.\n3. /delete\n   - Cette commande supprimera soit un agent soit une base de connaissances.\n\nSi vous souhaitez modifier les autorisations du menu contextuel ou des commandes du bot, accédez à Paramètres du serveur > Intégrations > Devana\n\nMerci d'utiliser Devana!",
+        "CONFIG_DESCRIPTION": "Ceci est le message de configuration que le bot %bot% utilisera.\nPour modifier cette configuration, utilisez le menu contextuel sur n'importe quel message ou utilisez des commandes.\n\nMenu contextuel :\n1. Cliquez avec le bouton droit sur le message\n2. Passez la souris sur \"Applications\"\n3. Sélectionnez \"Créer un agent\" ou \"Créer une base de connaissances\"\n   - \"Créer une base de connaissances\" créera une nouvelle base de connaissances à partir des messages et des pièces jointes du message sur lequel vous avez cliqué.\n   - \"Créer un agent\" créera un nouvel agent à partir du message d'acquittement de la création de la base de connaissances envoyé automatiquement par le bot après la création de la base de connaissances\n\nCommandes :\n1. /link\n   - Cette commande liera le salon au agent que vous souhaitez utiliser.\n2. /unlink\n   - Cette commande déliera le salon de l'agent.\n3. /delete\n   - Cette commande supprimera soit un agent soit une base de connaissances.\n\nSi vous souhaitez modifier les autorisations du menu contextuel ou des commandes du bot, accédez à Paramètres du serveur > Intégrations > Devana\n\nMerci d'utiliser Devana!",
         "CONFIG_PIN": "Le PIN est obligatoire afin de retrouver le message de configuration à l'avenir",
-        "CONFIG_CREATED": "Configuration créée"
+        "CONFIG_CREATED": "Message de configuration créé"
+      }
+    },
+    "context": {
+      "create_agent": {
+        "OWN_MESSAGE_ERROR": "Je ne peux pas créer un agent à partir de mes messages",
+        "LOADING_CREATE_AGENT": "Création de l'agent...",
+        "KNOWLEDGE_NOT_FOUND": "Base de connaissance introuvable",
+        "EMBED_CREATED_TITLE": "Agent créé",
+        "EMBED_CREATED_DESCRIPTION": "L'agent %agent% a été créé à partir de la base de connaissance %knowledge%"
+      },
+      "create_knowledge": {
+        "OWN_MESSAGE_ERROR": "Je ne peux pas créer une base de connaissance à partir de mes messages",
+        "LOADING_CREATE_KNOWLEDGE": "Création de la base de connaissance...",
+        "EMBED_CREATED_TITLE": "Base de connaissance créée",
+        "EMBED_CREATED_DESCRIPTION": "La base de connaissance %knowledge% a été créée à partir du message %message%"
+      }
+    },
+    "gateway": {
+      "message_create": {
+        "THREAD_ANNOUNCE": "Message auto généré, mentionnez moi pour continuer la discussion."
       }
     }
   }
