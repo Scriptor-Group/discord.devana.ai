@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { DevanaService } from './devana.service';
+import { I18nModule } from 'src/i18n/i18n.module';
 
 // Declaration of Devana module, which is used to communicate with Devana API
 @Module({
@@ -14,6 +15,7 @@ import { DevanaService } from './devana.service';
       },
       baseURL: 'https://api.devana.ai/',
     }),
+    I18nModule,
   ],
   providers: [DevanaService],
   exports: [DevanaService],

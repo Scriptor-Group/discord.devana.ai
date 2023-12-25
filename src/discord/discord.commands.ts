@@ -8,6 +8,7 @@ import { AgentAutocompleteInterceptor } from './dtos/agents.interceptor';
 import { UnLinkDto } from './dtos/unlink.dto';
 import { DeleteDto } from './dtos/delete.dto';
 import { KnowledgeAutocompleteInterceptor } from './dtos/knowledges.interceptor';
+import { I18nService } from 'src/i18n/i18n.service';
 
 @Injectable()
 export class DiscordCommands {
@@ -16,6 +17,7 @@ export class DiscordCommands {
   constructor(
     private discordService: DiscordService,
     private devanaService: DevanaService,
+    private i18n: I18nService,
   ) {
     this.logger.log('DiscordCommands initiated');
   }
@@ -35,14 +37,14 @@ export class DiscordCommands {
 
     if (!channel) {
       return interaction.reply({
-        content: 'You must provide a channel',
+        content: this.i18n.t('en', 'discord.commands.link.MISSING_CHANNEL'),
         ephemeral: true,
       });
     }
 
     if (!agent) {
       return interaction.reply({
-        content: 'You must provide an agent',
+        content: this.i18n.t('en', 'discord.commands.link.MISSING_AGENT'),
         ephemeral: true,
       });
     }
@@ -54,7 +56,7 @@ export class DiscordCommands {
 
     if (!configMessage) {
       return interaction.reply({
-        content: 'You must create a configuration message first',
+        content: this.i18n.t('en', 'discord.commands.link.MISSING_CONFIG'),
         ephemeral: true,
       });
     }
@@ -67,7 +69,11 @@ export class DiscordCommands {
 
     if (!agentId) {
       return interaction.reply({
-        content: `Agent ${agent} not found`,
+        content: this.i18n.t(
+          'en',
+          'discord.commands.link.AGENT_NOT_FOUND',
+          agent,
+        ),
         ephemeral: true,
       });
     }
@@ -79,7 +85,11 @@ export class DiscordCommands {
 
     if (agentExists) {
       return interaction.reply({
-        content: `Channel ${channel} is already linked to an agent`,
+        content: this.i18n.t(
+          'en',
+          'discord.commands.link.ALREADY_LINKED',
+          channel.name,
+        ),
         ephemeral: true,
       });
     }
@@ -111,9 +121,13 @@ export class DiscordCommands {
     this.discordService.setConfigMessage(configMessage);
 
     return interaction.reply({
-      content: `Linking channel <#${channel.id}> to agent ${agent}${
-        permission ? ` for ${permission.toString()}` : ''
-      }`,
+      content: this.i18n.t(
+        'en',
+        'discord.commands.link.LINKED',
+        channel.name,
+        agent,
+        permission ? ` for ${permission.toString()}` : '',
+      ),
       ephemeral: true,
     });
   }
@@ -132,7 +146,7 @@ export class DiscordCommands {
 
     if (!channel) {
       return interaction.reply({
-        content: 'You must provide a channel',
+        content: this.i18n.t('en', 'discord.commands.unlink.MISSING_CHANNEL'),
         ephemeral: true,
       });
     }
@@ -144,7 +158,7 @@ export class DiscordCommands {
 
     if (!configMessage) {
       return interaction.reply({
-        content: 'You must create a configuration message first',
+        content: this.i18n.t('en', 'discord.commands.unlink.MISSING_CONFIG'),
         ephemeral: true,
       });
     }
@@ -156,7 +170,11 @@ export class DiscordCommands {
 
     if (!agentExists) {
       return interaction.reply({
-        content: `Channel ${channel} is not linked to an agent`,
+        content: this.i18n.t(
+          'en',
+          'discord.commands.unlink.NOT_LINKED',
+          channel.name,
+        ),
         ephemeral: true,
       });
     }
@@ -178,7 +196,11 @@ export class DiscordCommands {
     this.discordService.setConfigMessage(configMessage);
 
     return interaction.reply({
-      content: `Unlinked channel <#${channel.id}>`,
+      content: this.i18n.t(
+        'en',
+        'discord.commands.unlink.UNLINKED',
+        channel.name,
+      ),
       ephemeral: true,
     });
   }
@@ -201,7 +223,10 @@ export class DiscordCommands {
     // If none are provided we dont want to execute the command
     if (!agent && !knowledgeBase) {
       return interaction.reply({
-        content: 'You must provide an agent or a knowledge base',
+        content: this.i18n.t(
+          'en',
+          'discord.commands.delete.MISSING_KNOWLEDGE_OR_AGENT',
+        ),
         ephemeral: true,
       });
     }
@@ -209,7 +234,10 @@ export class DiscordCommands {
     // If both are provided we dont want to execute the command
     if (agent && knowledgeBase) {
       return interaction.reply({
-        content: 'You must provide an agent or a knowledge base',
+        content: this.i18n.t(
+          'en',
+          'discord.commands.delete.MISSING_KNOWLEDGE_OR_AGENT',
+        ),
         ephemeral: true,
       });
     }
@@ -223,7 +251,11 @@ export class DiscordCommands {
 
       if (!agentId) {
         return interaction.reply({
-          content: `Agent ${agent} not found`,
+          content: this.i18n.t(
+            'en',
+            'discord.commands.delete.AGENT_NOT_FOUND',
+            agent,
+          ),
           ephemeral: true,
         });
       }
@@ -231,7 +263,11 @@ export class DiscordCommands {
       await this.devanaService.deleteAgent(agentId);
 
       return interaction.reply({
-        content: `Agent ${agent} deleted`,
+        content: this.i18n.t(
+          'en',
+          'discord.commands.delete.AGENT_DELETED',
+          agent,
+        ),
         ephemeral: true,
       });
     }
@@ -244,7 +280,11 @@ export class DiscordCommands {
 
       if (!knowledgeBaseExists) {
         return interaction.reply({
-          content: `Knowledge base ${knowledgeBase} not found`,
+          content: this.i18n.t(
+            'en',
+            'discord.commands.delete.KNOWLEDGE_NOT_FOUND',
+            knowledgeBase,
+          ),
           ephemeral: true,
         });
       }
@@ -252,7 +292,11 @@ export class DiscordCommands {
       await this.devanaService.deleteKnowledgeBase(knowledgeBaseExists.id);
 
       return interaction.reply({
-        content: `Knowledge base ${knowledgeBase} deleted`,
+        content: this.i18n.t(
+          'en',
+          'discord.commands.delete.KNOWLEDGE_DELETED',
+          knowledgeBase,
+        ),
         ephemeral: true,
       });
     }
@@ -286,30 +330,15 @@ export class DiscordCommands {
     const message = await interaction.channel.send({
       embeds: [
         new EmbedBuilder({
-          title: 'Do not delete.\nDo not unpin.\nDo not edit.',
-          description: [
-            `This is the configuration message the ${this.discordService.client.user.displayName} bot will use.`,
-            'In order to edit this configuration use the context menu on any messages or use commands.',
-            '',
-            'Context menu :',
-            '1. Right click on the message',
-            '2. Hover over "Apps"',
-            '3. Select "Create agent" or "Create knowledge base"',
-            '   - "Create knowledge base" will create a new knowledge base from the messages and the attachments of the message you clicked on.',
-            '   - "Create agent" will create a new agent from the aknowledgment message of knowledge base creation automaticaly sent by the bot after the creation of the knowledge base',
-            '',
-            'Commands :',
-            '1. /link',
-            '   - This command will link the channel to the agent you want to use.',
-            '2. /unlink',
-            '   - This command will unlink the channel from the agent.',
-            '3. /delete',
-            '   - This command will delete either an agent or a knowledge base.',
-            '',
-            'If you want to edit bot context menu or commands permissions go to Server Settings > Integrations > Devana',
-            '',
-            'Thanks for using Devana!',
-          ].join('\n'),
+          title: this.i18n.t(
+            'en',
+            'discord.commands.configuration.CONFIG_TITLE',
+          ),
+          description: this.i18n.t(
+            'en',
+            'discord.commands.configuration.CONFIG_DESCRIPTION',
+            this.discordService.client.user.username,
+          ),
           author: {
             name: 'Devana configuration',
           },
@@ -325,7 +354,9 @@ export class DiscordCommands {
 
     // We pin the message in order to find it more easily
     // (quite literaly without fetching all the messages from the guild)
-    await message.pin('Pin is mandatory to find configuration later.');
+    await message.pin(
+      this.i18n.t('en', 'discord.commands.configuration.CONFIG_PIN'),
+    );
 
     const lmessage = await interaction.channel.messages.fetch({
       limit: 1,
@@ -335,7 +366,10 @@ export class DiscordCommands {
     lmessage.last().delete();
 
     return interaction.reply({
-      content: 'Configuration message created!',
+      content: this.i18n.t(
+        'en',
+        'discord.commands.configuration.CONFIG_CREATED',
+      ),
       ephemeral: true,
     });
   }

@@ -7,6 +7,7 @@ import { AppService } from 'src/app.service';
 import { HttpModule } from '@nestjs/axios';
 import { DevanaModule } from 'src/devana/devana.module';
 import { DiscordContext } from './discord.context';
+import { I18nModule } from 'src/i18n/i18n.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { DiscordContext } from './discord.context';
       },
     }),
     DevanaModule,
+    I18nModule,
   ],
   providers: [
     DiscordCommands,
