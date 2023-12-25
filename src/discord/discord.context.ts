@@ -9,6 +9,7 @@ import {
 import { DiscordService } from './discord.service';
 import { DevanaService } from 'src/devana/devana.service';
 import { I18nService } from 'src/i18n/i18n.service';
+import { ConfigService } from '@nestjs/config';
 
 // A context is a class used to handle the context menu commands
 @Injectable()
@@ -18,6 +19,7 @@ export class DiscordContext {
   constructor(
     private discordService: DiscordService,
     private devanaService: DevanaService,
+    private configService: ConfigService,
     private i18n: I18nService,
   ) {
     this.logger.log('DiscordContext initiated');
@@ -139,7 +141,7 @@ export class DiscordContext {
     // Here we use a default Devana AI to ask it to get a short description
     // of the message content, it will be used as the knowledge base name
     const question = await this.devanaService.askAgent(
-      'clqh6r78100200trlvthv3sf7',
+      this.configService.get('DEVANA_AGENT_BASE'),
       encodeURIComponent(
         `Define the following text in maximum two words without using special characters : "${message.content}"`,
       ),
