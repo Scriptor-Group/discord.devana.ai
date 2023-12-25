@@ -3,6 +3,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Attachment, Collection, Snowflake } from 'discord.js';
 import { firstValueFrom } from 'rxjs';
+import { I18nService } from 'src/i18n/i18n.service';
 
 // Devana service is used to communicate with Devana API
 @Injectable()
@@ -33,6 +34,7 @@ export class DevanaService {
   constructor(
     private httpService: HttpService,
     private configService: ConfigService,
+    private i18n: I18nService,
   ) {}
 
   /**
@@ -68,8 +70,11 @@ export class DevanaService {
       this.httpService.axiosRef.defaults.headers.common.Authorization = `Bearer ${this.token}`;
 
       return response.data.login;
-    } catch (error) {
-      throw new HttpException({ message: error.message }, error.status);
+    } catch {
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR') },
+        500,
+      );
     }
   }
 
@@ -97,7 +102,10 @@ export class DevanaService {
 
       return response;
     } catch {
-      throw new HttpException({ message: '' }, 500);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR') },
+        500,
+      );
     }
   }
 
@@ -129,7 +137,10 @@ export class DevanaService {
 
       return response.data.getHistoricalConv.edges;
     } catch (error) {
-      throw new HttpException({ message: error.message }, error.status);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR') },
+        500,
+      );
     }
   }
 
@@ -157,7 +168,12 @@ export class DevanaService {
 
       return response.data.getAllMyIAs.edges;
     } catch (error) {
-      throw new HttpException({ message: error.message }, error.status);
+      throw new HttpException(
+        {
+          message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR'),
+        },
+        500,
+      );
     }
   }
 
@@ -180,7 +196,10 @@ export class DevanaService {
 
       return response.data.deleteMyIA;
     } catch (error) {
-      throw new HttpException({ message: error.message }, error.status);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR') },
+        500,
+      );
     }
   }
 
@@ -212,7 +231,10 @@ export class DevanaService {
 
       return response.data.getFolder;
     } catch (error) {
-      throw new HttpException({ message: error.message }, error.status);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR') },
+        500,
+      );
     }
   }
 
@@ -250,7 +272,10 @@ export class DevanaService {
 
       return response.data.getFoldersPagination.edges;
     } catch (error) {
-      throw new HttpException({ message: error.message }, error.status);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR') },
+        500,
+      );
     }
   }
 
@@ -273,7 +298,10 @@ export class DevanaService {
 
       return response.data.deleteFolder;
     } catch (error) {
-      throw new HttpException({ message: error.message }, error.status);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR') },
+        500,
+      );
     }
   }
 
@@ -305,7 +333,10 @@ export class DevanaService {
         ]),
       );
     } catch (error) {
-      throw new HttpException({ message: error.message }, error.status);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR') },
+        500,
+      );
     }
   }
 
@@ -344,10 +375,11 @@ export class DevanaService {
     const models = (await this.getModels()) || this.defaultModels;
 
     if (model && !models[model]) {
-      throw new HttpException({ message: 'Invalid model provided.' }, 400);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INVALID_MODEL') },
+        400,
+      );
     }
-
-    console.log('Creating agent');
 
     try {
       const request = this.httpService.post('graphql', {
@@ -422,7 +454,10 @@ export class DevanaService {
 
       return response.data.upsertMyIAs;
     } catch {
-      throw new HttpException({ message: 'Error creating agent.' }, 500);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR') },
+        500,
+      );
     }
   }
 
@@ -449,7 +484,10 @@ export class DevanaService {
 
       return response.data.upsetFolder;
     } catch (error) {
-      console.log(error);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR') },
+        500,
+      );
     }
   }
 
@@ -478,7 +516,10 @@ export class DevanaService {
         }),
       );
     } catch (error) {
-      throw new HttpException({ message: error.message }, error.status);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.FETCH_ERROR') },
+        500,
+      );
     }
 
     try {
@@ -492,7 +533,10 @@ export class DevanaService {
 
       return response.ids;
     } catch (error) {
-      throw new HttpException({ message: error.message }, error.status);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.UPLOAD_ERROR') },
+        500,
+      );
     }
   }
 
@@ -521,7 +565,10 @@ export class DevanaService {
 
       return response.ids;
     } catch (error) {
-      throw new HttpException({ message: error.message }, error.status);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR') },
+        500,
+      );
     }
   }
 
@@ -564,7 +611,10 @@ export class DevanaService {
 
       return response.data.upsertWebsite;
     } catch (error) {
-      throw new HttpException({ message: error.message }, error.status);
+      throw new HttpException(
+        { message: this.i18n.t('en', 'devana.service.INTERNAL_SERVER_ERROR') },
+        500,
+      );
     }
   }
 

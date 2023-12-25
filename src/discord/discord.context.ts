@@ -8,6 +8,7 @@ import {
 } from 'necord';
 import { DiscordService } from './discord.service';
 import { DevanaService } from 'src/devana/devana.service';
+import { I18nService } from 'src/i18n/i18n.service';
 
 // A context is a class used to handle the context menu commands
 @Injectable()
@@ -17,6 +18,7 @@ export class DiscordContext {
   constructor(
     private discordService: DiscordService,
     private devanaService: DevanaService,
+    private i18n: I18nService,
   ) {
     this.logger.log('DiscordContext initiated');
   }
@@ -40,11 +42,18 @@ export class DiscordContext {
       )
     )
       return interaction.reply({
-        content: `I can only create agent from my own knowledge base messages`,
+        content: this.i18n.t(
+          'en',
+          'discord.context.create_agent.OWN_MESSAGE_ERROR',
+        ),
       });
 
+    // We let the user know that we are creating the agent
     interaction.reply({
-      content: `Creating agent`,
+      content: this.i18n.t(
+        'en',
+        'discord.context.create_agent.LOADING_CREATE_AGENT',
+      ),
     });
 
     // Get the knowledge base id from the targeted message and use it to get
@@ -61,7 +70,10 @@ export class DiscordContext {
 
     if (!knowledgeBase)
       return interaction.reply({
-        content: `Knowledge base ${knowledgeBaseId} not found`,
+        content: this.i18n.t(
+          'en',
+          'discord.context.create_agent.KNOWLEDGE_NOT_FOUND',
+        ),
       });
 
     // Create the agent from the knowledge base
@@ -76,8 +88,15 @@ export class DiscordContext {
       embeds: [
         {
           url: `https://app.devana.ai/chat/${agent.id}`,
-          title: 'Agent created',
-          description: `Agent ${agent.name} created`,
+          title: this.i18n.t(
+            'en',
+            'discord.context.create_agent.EMBED_CREATED_TITLE',
+          ),
+          description: this.i18n.t(
+            'en',
+            'discord.context.create_agent.EMBED_CREATED_DESCRIPTION',
+            agent.name,
+          ),
           fields: [
             {
               name: 'agent-id',
@@ -101,13 +120,19 @@ export class DiscordContext {
     // Quite straightforward, check if the targeted message is from the bot
     if (message.author.id === this.discordService.client.user.id)
       return interaction.reply({
-        content: `I can't create knowledge base from my own messages`,
+        content: this.i18n.t(
+          'en',
+          'discord.context.create_knowledge.OWN_MESSAGE_ERROR',
+        ),
       });
 
     // We let the user know that we are creating the knowledge base
     // this is set because it can take quite a while
     interaction.reply({
-      content: `Creating knowledge base`,
+      content: this.i18n.t(
+        'en',
+        'discord.context.create_knowledge.LOADING_CREATE_KNOWLEDGE',
+      ),
       ephemeral: true,
     });
 
@@ -131,8 +156,15 @@ export class DiscordContext {
       embeds: [
         {
           url: `https://app.devana.ai/account/knowledge/${knowledgeBase.id}`,
-          title: 'Knowledge base created',
-          description: `Knowledge base ${knowledgeBase.name} created`,
+          title: this.i18n.t(
+            'en',
+            'discord.context.create_knowledge.EMBED_CREATED_TITLE',
+          ),
+          description: this.i18n.t(
+            'en',
+            'discord.context.create_knowledge.EMBED_CREATED_DESCRIPTION',
+            knowledgeBase.name,
+          ),
           fields: [
             {
               name: 'knowledge-id',
