@@ -3,6 +3,7 @@ import { Once, On, Context, ContextOf } from 'necord';
 import { DiscordService } from './discord.service';
 import { DevanaService } from 'src/devana/devana.service';
 import { TextChannel } from 'discord.js';
+import { I18nService } from 'src/i18n/i18n.service';
 
 // A gateway is a class used to handle the events of the discord client
 // this is the core of the bot, it is used to handle the messages, the threads, the reactions, etc...
@@ -13,6 +14,7 @@ export class DiscordGateway {
   constructor(
     private discordService: DiscordService,
     private devanaService: DevanaService,
+    private i18n: I18nService,
   ) {
     this.logger.log('DiscordGateway initiated');
   }
@@ -71,7 +73,7 @@ export class DiscordGateway {
     return message.reply(
       message.channel.isThread() && !mentionned
         ? [
-            `*Ce message est auto généré après la création de ce thread et tentera de répondre au mieux à votre question. Si vous souhaitez parler à un agent, mentionnez le dans votre message.*`,
+            this.i18n.t('en', 'discord.gateway.message_create.THREAD_ANNOUNCE'),
             '',
             question.text,
           ].join('\n')
