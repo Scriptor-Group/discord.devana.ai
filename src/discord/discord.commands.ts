@@ -1,5 +1,5 @@
 import { Injectable, Logger, UseInterceptors } from '@nestjs/common';
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, PermissionFlagsBits } from 'discord.js';
 import { Context, Options, SlashCommand, SlashCommandContext } from 'necord';
 import { DiscordService } from './discord.service';
 import { DevanaService } from 'src/devana/devana.service';
@@ -27,7 +27,7 @@ export class DiscordCommands {
   @SlashCommand({
     name: 'link',
     description: 'Link channel to an agent',
-    // TODO: Set default permissions to admin only
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
   })
   public async onLink(
     @Context() [interaction]: SlashCommandContext,
@@ -136,7 +136,7 @@ export class DiscordCommands {
   @SlashCommand({
     name: 'unlink',
     description: 'Unlink channel from an agent',
-    // TODO: Set default permissions to admin only
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
   })
   public async onUnlink(
     @Context() [interaction]: SlashCommandContext,
@@ -212,7 +212,7 @@ export class DiscordCommands {
   @SlashCommand({
     name: 'delete',
     description: 'Delete an agent or a knowledge base',
-    // TODO: Set default permissions to admin only
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
   })
   public async onDelete(
     @Context() [interaction]: SlashCommandContext,
@@ -306,7 +306,7 @@ export class DiscordCommands {
   @SlashCommand({
     name: 'configuration',
     description: 'Configure the bot',
-    // TODO: Set default permissions to admin only
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
   })
   public async onConfig(@Context() [interaction]: SlashCommandContext) {
     this.logger.log(`[/configuration] ${interaction.user.username}`);
