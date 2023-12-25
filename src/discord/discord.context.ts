@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Message } from 'discord.js';
+import { Message, PermissionFlagsBits } from 'discord.js';
 import {
   Context,
   MessageCommand,
@@ -26,7 +26,7 @@ export class DiscordContext {
   // Create Agent context menu command is used to create a new agent from a knowledge base message
   @MessageCommand({
     name: 'Create agent',
-    // TODO: Add default permission for admin only
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
   })
   public async createAgentFromMessage(
     @Context() [interaction]: MessageCommandContext,
@@ -111,7 +111,7 @@ export class DiscordContext {
   // Create Knowledge base context menu command is used to create a new knowledge base from a message
   @MessageCommand({
     name: 'Create knowledge base',
-    // TODO: Add default permission for admin only
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
   })
   public async createKnowledgeBaseFromMessage(
     @Context() [interaction]: MessageCommandContext,
