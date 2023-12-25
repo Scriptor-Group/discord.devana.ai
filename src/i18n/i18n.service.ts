@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import frFR from './locales/fr-FR.json';
-import enUS from './locales/en-EN.json';
+import * as frFR from './locales/fr-FR.json';
+import * as enUS from './locales/en-EN.json';
 import { I18nLang, Languages } from './i18n.types';
 
 @Injectable()

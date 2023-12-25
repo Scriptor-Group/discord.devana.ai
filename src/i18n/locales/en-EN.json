@@ -39,7 +39,7 @@
     },
     "context": {
       "create_agent": {
-        "OWN_MESSAGE_ERROR": "I can't create an agent from my messages",
+        "OWN_MESSAGE_ERROR": "I can't create an agent from a non knowledge message",
         "LOADING_CREATE_AGENT": "Creating agent...",
         "KNOWLEDGE_NOT_FOUND": "Knowledge base not found",
         "EMBED_CREATED_TITLE": "Agent created",
