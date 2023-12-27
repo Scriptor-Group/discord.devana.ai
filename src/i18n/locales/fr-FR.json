@@ -43,7 +43,9 @@
         "LOADING_CREATE_AGENT": "Création de l'agent...",
         "KNOWLEDGE_NOT_FOUND": "Base de connaissance introuvable",
         "EMBED_CREATED_TITLE": "Agent créé",
-        "EMBED_CREATED_DESCRIPTION": "L'agent %agent% a été créé à partir de la base de connaissance %knowledge%"
+        "EMBED_CREATED_DESCRIPTION": "L'agent %agent% a été créé à partir de la base de connaissance %knowledge%",
+        "AGENT_CREATED": "L'Agent %agent% a été créé.",
+        "INTERNAL_SERVER_ERROR": "Erreur interne du serveur"
       },
       "create_knowledge": {
         "OWN_MESSAGE_ERROR": "Je ne peux pas créer une base de connaissance à partir de mes messages",
