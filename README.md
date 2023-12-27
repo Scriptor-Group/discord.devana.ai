@@ -1,5 +1,15 @@
 # Devana Discord BOT
 
+## Production
+
+Let CI do it's job.
+
+Otherwise
+```bash
+docker build .
+```
+And then use the built docker on your production service.
+
 ## Installation
 
 ```bash
@@ -37,8 +47,9 @@ yarn
 yarn start:dev
 ```
 
-A few notes for developers
-Please keep this code clean, not too much cyclomatic complexity, keep it clean with line breaks and comments, thank you c:
+A few notes for developers. \
+Please keep this code clean, not too much cyclomatic complexity, keep it clean with line breaks and comments, thank you 😁 \
+For cyclomatic complexity look at [CodeMetrics](https://marketplace.visualstudio.com/items?itemName=kisstkondoros.vscode-codemetrics)
 
 ## Description
 

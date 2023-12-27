@@ -25,117 +25,6 @@ export class DiscordContext {
     this.logger.log('DiscordContext initiated');
   }
 
-  // Create Agent context menu command is used to create a new agent from a knowledge base message
-  @MessageCommand({
-    name: 'Create agent',
-    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
-  })
-  public async createAgentFromMessage(
-    @Context() [interaction]: MessageCommandContext,
-    @TargetMessage() message: Message,
-  ) {
-    // Check if the targeted message is from the bot
-    // and check if the targeted message has a knowledge-id field
-    // this will tell us if the targeted message is a knowledge base message
-    if (
-      message.author.id !== this.discordService.client.user.id &&
-      !message.embeds.some((embed) =>
-        embed.fields.some((field) => field.name === 'knowledge-id'),
-      )
-    )
-      return interaction.reply({
-        content: this.i18n.t(
-          'en',
-          'discord.context.create_agent.OWN_MESSAGE_ERROR',
-        ),
-      });
-
-    /* const modal = new ModalBuilder({
-      custom_id: 'agent-modal',
-      title: 'Agent creation',
-      components: [
-        new ActionRowBuilder<ModalActionRowComponentBuilder>({
-          components: [
-            new TextInputBuilder({
-              custom_id: 'agent-name',
-              placeholder: 'Agent name (optional)',
-              label: 'Agent name',
-              required: false,
-            }),
-            new TextInputBuilder({
-              custom_id: 'agent-description',
-              placeholder: 'Agent more informations',
-              label: 'Describe the agent',
-              style: TextInputStyle.Paragraph,
-              required: false,
-            }),
-          ],
-        }),
-      ],
-    });
-
-    await interaction.showModal(modal); */
-
-    // We let the user know that we are creating the agent
-    interaction.reply({
-      content: this.i18n.t(
-        'en',
-        'discord.context.create_agent.LOADING_CREATE_AGENT',
-      ),
-    });
-
-    // Get the knowledge base id from the targeted message and use it to get
-    // the knowledge base from the devana api
-    const knowledgeBaseId = message.embeds
-      .find((embed) =>
-        embed.fields.some((field) => field.name === 'knowledge-id'),
-      )
-      .fields.find((field) => field.name === 'knowledge-id').value;
-
-    const knowledgeBase = await this.devanaService.getKnowledgeBase(
-      knowledgeBaseId,
-    );
-
-    if (!knowledgeBase)
-      return interaction.reply({
-        content: this.i18n.t(
-          'en',
-          'discord.context.create_agent.KNOWLEDGE_NOT_FOUND',
-        ),
-      });
-
-    // Create the agent from the knowledge base
-    const agent = await this.devanaService.createAgent({
-      name: knowledgeBase.name,
-      description: knowledgeBase.name,
-      model: 'GPT4',
-      knowledgeBases: [knowledgeBaseId],
-    });
-
-    return interaction.channel.send({
-      embeds: [
-        {
-          url: `https://app.devana.ai/chat/${agent.id}`,
-          title: this.i18n.t(
-            'en',
-            'discord.context.create_agent.EMBED_CREATED_TITLE',
-          ),
-          description: this.i18n.t(
-            'en',
-            'discord.context.create_agent.EMBED_CREATED_DESCRIPTION',
-            agent.name,
-          ),
-          fields: [
-            {
-              name: 'agent-id',
-              value: agent.id,
-            },
-          ],
-        },
-      ],
-    });
-  }
-
   // Create Knowledge base context menu command is used to create a new knowledge base from a message
   @MessageCommand({
     name: 'Create knowledge base',
@@ -197,6 +86,120 @@ export class DiscordContext {
             {
               name: 'knowledge-id',
               value: knowledgeBase.id,
+            },
+          ],
+        },
+      ],
+    });
+  }
+
+  // Create Agent context menu command is used to create a new agent from a knowledge base message
+  @MessageCommand({
+    name: 'Create agent',
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
+  })
+  public async createAgentFromMessage(
+    @Context() [interaction]: MessageCommandContext,
+    @TargetMessage() message: Message,
+  ) {
+    // Check if the targeted message is from the bot
+    // and check if the targeted message has a knowledge-id field
+    // this will tell us if the targeted message is a knowledge base message
+    if (
+      message.author.id !== this.discordService.client.user.id &&
+      !message.embeds.some((embed) =>
+        embed.fields.some((field) => field.name === 'knowledge-id'),
+      )
+    )
+      return interaction.reply({
+        content: this.i18n.t(
+          'en',
+          'discord.context.create_agent.OWN_MESSAGE_ERROR',
+        ),
+        ephemeral: true,
+      });
+
+    /* const modal = new ModalBuilder({
+      custom_id: 'agent-modal',
+      title: 'Agent creation',
+      components: [
+        new ActionRowBuilder<ModalActionRowComponentBuilder>({
+          components: [
+            new TextInputBuilder({
+              custom_id: 'agent-name',
+              placeholder: 'Agent name (optional)',
+              label: 'Agent name',
+              required: false,
+            }),
+            new TextInputBuilder({
+              custom_id: 'agent-description',
+              placeholder: 'Agent more informations',
+              label: 'Describe the agent',
+              style: TextInputStyle.Paragraph,
+              required: false,
+            }),
+          ],
+        }),
+      ],
+    });
+
+    await interaction.showModal(modal); */
+
+    // We let the user know that we are creating the agent
+    interaction.reply({
+      content: this.i18n.t(
+        'en',
+        'discord.context.create_agent.LOADING_CREATE_AGENT',
+      ),
+      ephemeral: true,
+    });
+
+    // Get the knowledge base id from the targeted message and use it to get
+    // the knowledge base from the devana api
+    const knowledgeBaseId = message.embeds
+      .find((embed) =>
+        embed.fields.some((field) => field.name === 'knowledge-id'),
+      )
+      .fields.find((field) => field.name === 'knowledge-id').value;
+
+    const knowledgeBase = await this.devanaService.getKnowledgeBase(
+      knowledgeBaseId,
+    );
+
+    if (!knowledgeBase)
+      return interaction.reply({
+        content: this.i18n.t(
+          'en',
+          'discord.context.create_agent.KNOWLEDGE_NOT_FOUND',
+        ),
+        ephemeral: true,
+      });
+
+    // Create the agent from the knowledge base
+    const agent = await this.devanaService.createAgent({
+      name: knowledgeBase.name,
+      description: knowledgeBase.name,
+      model: 'GPT4',
+      knowledgeBases: [knowledgeBaseId],
+    });
+
+    return interaction.channel.send({
+      embeds: [
+        {
+          url: `https://app.devana.ai/chat/${agent.id}`,
+          title: this.i18n.t(
+            'en',
+            'discord.context.create_agent.EMBED_CREATED_TITLE',
+          ),
+          description: this.i18n.t(
+            'en',
+            'discord.context.create_agent.EMBED_CREATED_DESCRIPTION',
+            agent.name,
+          ),
+          fields: [
+            {
+              name: 'agent-id',
+              value: agent.id,
             },
           ],
         },
