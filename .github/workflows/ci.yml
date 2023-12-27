@@ -1,0 +1,27 @@
+name: 'Build and push Docker image'
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Image version'
+        required: false
+
+env:
+  # Change these to match your project
+  REGISTRY: ${{ secrets.REGISTRY }}
+  IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+  TAG_NAME: ${{ github.ref }}
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+
+      # Target the production stage 🦄
+      - name: Build image
+        run: docker build . -t $(echo $REGISTRY)/$(echo $IMAGE_NAME):(echo $TAG_NAME) --target prod
+
+      # Whatever you need to do with the image 🎉
