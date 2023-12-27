@@ -12,6 +12,7 @@ export class DevanaService {
   private logger = new Logger(DevanaService.name);
   public token: string;
   // Default models are used to validate model provided by user
+  // This agent will get data from the internet and must use Mistral model.\nHe will make coffee ☕\netc...
   private defaultModels = {
     GPT4: 'GPT4',
     GPT35: 'GPT35',
@@ -148,7 +149,10 @@ export class DevanaService {
         if (isJSON) {
           source.close();
           observer.next({
-            text: JSON.parse(event.data.splice(6))?.text.replace(/\\n/g, `\n`),
+            text: JSON.parse(event.data.substring(6))?.text.replace(
+              /\\n/g,
+              `\n`,
+            ),
           });
           observer.complete();
           return;
