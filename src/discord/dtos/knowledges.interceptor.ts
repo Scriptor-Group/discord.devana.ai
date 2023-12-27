@@ -20,7 +20,7 @@ export class KnowledgeAutocompleteInterceptor extends AutocompleteInterceptor {
     const knowledgeBases = await this.devanaService.getKnowledgeBases();
 
     if (focused.name === 'knowledge') {
-      choices = knowledgeBases.map((knowledge) => knowledge.name);
+      choices = knowledgeBases.map((knowledge) => knowledge.name || 'Unamed');
     }
 
     return interaction.respond(
