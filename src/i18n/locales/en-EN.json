@@ -43,7 +43,9 @@
         "LOADING_CREATE_AGENT": "Creating agent...",
         "KNOWLEDGE_NOT_FOUND": "Knowledge base not found",
         "EMBED_CREATED_TITLE": "Agent created",
-        "EMBED_CREATED_DESCRIPTION": "Agent %agent% has been created from knowledge base %knowledge%"
+        "EMBED_CREATED_DESCRIPTION": "Agent %agent% has been created from knowledge base %knowledge%",
+        "AGENT_CREATED": "Agent %agent% has been created.",
+        "INTERNAL_SERVER_ERROR": "Internal server error"
       },
       "create_knowledge": {
         "OWN_MESSAGE_ERROR": "I can't create a knowledge base from my messages",

@@ -1,5 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Message, PermissionFlagsBits } from 'discord.js';
+import {
+  ActionRowBuilder,
+  Message,
+  ModalActionRowComponentBuilder,
+  ModalBuilder,
+  PermissionFlagsBits,
+  StringSelectMenuBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+} from 'discord.js';
 import {
   Context,
   MessageCommand,
@@ -119,40 +128,14 @@ export class DiscordContext {
         ephemeral: true,
       });
 
-    /* const modal = new ModalBuilder({
-      custom_id: 'agent-modal',
-      title: 'Agent creation',
-      components: [
-        new ActionRowBuilder<ModalActionRowComponentBuilder>({
-          components: [
-            new TextInputBuilder({
-              custom_id: 'agent-name',
-              placeholder: 'Agent name (optional)',
-              label: 'Agent name',
-              required: false,
-            }),
-            new TextInputBuilder({
-              custom_id: 'agent-description',
-              placeholder: 'Agent more informations',
-              label: 'Describe the agent',
-              style: TextInputStyle.Paragraph,
-              required: false,
-            }),
-          ],
-        }),
-      ],
-    });
-
-    await interaction.showModal(modal); */
-
-    // We let the user know that we are creating the agent
+    /* // We let the user know that we are creating the agent
     interaction.reply({
       content: this.i18n.t(
         'en',
         'discord.context.create_agent.LOADING_CREATE_AGENT',
       ),
       ephemeral: true,
-    });
+    }); */
 
     // Get the knowledge base id from the targeted message and use it to get
     // the knowledge base from the devana api
@@ -175,35 +158,55 @@ export class DiscordContext {
         ephemeral: true,
       });
 
-    // Create the agent from the knowledge base
-    const agent = await this.devanaService.createAgent({
-      name: knowledgeBase.name,
-      description: knowledgeBase.name,
-      model: 'GPT4',
-      knowledgeBases: [knowledgeBaseId],
-    });
-
-    return interaction.channel.send({
-      embeds: [
-        {
-          url: `https://app.devana.ai/chat/${agent.id}`,
-          title: this.i18n.t(
-            'en',
-            'discord.context.create_agent.EMBED_CREATED_TITLE',
-          ),
-          description: this.i18n.t(
-            'en',
-            'discord.context.create_agent.EMBED_CREATED_DESCRIPTION',
-            agent.name,
-          ),
-          fields: [
-            {
-              name: 'agent-id',
-              value: agent.id,
-            },
+    const modal = new ModalBuilder({
+      customId: `agent/${knowledgeBaseId}`,
+      title: 'Agent creation',
+      components: [
+        new ActionRowBuilder<ModalActionRowComponentBuilder>({
+          components: [
+            new TextInputBuilder({
+              customId: 'name',
+              placeholder: 'Agent name (optional)',
+              label: 'Agent name',
+              value: knowledgeBase.name,
+              style: TextInputStyle.Short,
+              required: true,
+            }),
           ],
-        },
+        }),
+        new ActionRowBuilder<ModalActionRowComponentBuilder>({
+          components: [
+            new TextInputBuilder({
+              customId: 'description',
+              placeholder: [
+                'This agent will get data from the internet and must use Mistral model.',
+                'He will make coffee ☕',
+                'etc...',
+              ].join('\n'),
+              label: 'Describe the agent',
+              style: TextInputStyle.Paragraph,
+              required: false,
+            }),
+          ],
+        }),
+        new ActionRowBuilder<ModalActionRowComponentBuilder>({
+          components: [
+            new TextInputBuilder({
+              customId: 'identity',
+              placeholder: [
+                `You\'re a Discord agent, your name is "${this.discordService.client.user.username}".`,
+                "You'll anwser any question",
+                'etc...',
+              ].join('\n'),
+              label: 'Agent identity',
+              style: TextInputStyle.Paragraph,
+              required: false,
+            }),
+          ],
+        }),
       ],
     });
+
+    return await interaction.showModal(modal);
   }
 }

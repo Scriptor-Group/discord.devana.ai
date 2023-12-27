@@ -55,6 +55,13 @@ export class I18nService {
 
     const text = value as string;
 
+    return this.setKeysInString(text, ...args);
+  }
+
+  public setKeysInString(
+    text: string,
+    ...args: ({ [key: string]: string } | string[] | string)[]
+  ): string {
     // If the first argument is an array or an object we use it as the argument list
     if (Array.isArray(args[0])) args = args[0];
     // If the first argument is an object we get keys from the object and use them to match
