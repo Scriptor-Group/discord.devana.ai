@@ -136,34 +136,39 @@ export class DevanaService {
 
       let content = '';
       // We start with a lastSent of 500ms ago to let 1s to the agent to generate an answer
-      let lastSent = Date.now() - 500;
+      let lastSent =
+        Date.now() - this.configService.get('ASK_STREAM_DELAY') / 3;
 
       // We listen to the message event to get the answer from Devana
       source.onmessage = (event) => {
+        const isJSON = event.data.startsWith('[JSON]');
+
+        // If the message is a JSON, we parse it and send it to the observer
+        // knowing last event sent is a JSON, we close the stream
+        if (isJSON) {
+          source.close();
+          observer.next({
+            text: JSON.parse(event.data.splice(6))?.text.replace(/\\n/g, `\n`),
+          });
+          observer.complete();
+          return;
+        }
+
         // We check if the message is a JSON or a text and set it as content
-        const message = event.data.startsWith('[JSON]') ? '' : event.data;
+        const message = event.data;
         if (!message) return;
 
         content += message;
 
         // We check if the last message was sent less than 1.5s ago (not to flood discord)
-        if (Date.now() - lastSent < 1500) return;
+        if (Date.now() - lastSent < this.configService.get('ASK_STREAM_DELAY'))
+          return;
+
         lastSent = Date.now();
 
         observer.next({
           text: content.replace(/\\n/g, `\n`),
         });
-      };
-
-      // We listen to the error event to close the stream, this is a trick from Devana API
-      // to close the stream when the agent has no more answers
-      source.onerror = () => {
-        source.close();
-        // We send the last message to the observer
-        observer.next({
-          text: content.replace(/\\n/g, `\n`),
-        });
-        observer.complete();
       };
 
       return () => {
