@@ -19,6 +19,8 @@ export class AgentAutocompleteInterceptor extends AutocompleteInterceptor {
 
     const agents = await this.devanaService.getAgents();
 
+    console.log(agents);
+
     if (focused.name === 'agent') {
       choices = agents.map((agent) => agent.name);
     }
