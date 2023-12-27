@@ -207,8 +207,10 @@ export class DiscordCommands {
 
   // This command is used to delete an agent or a knowledge base
   // We use interceptors to autocomplete the agent and knowledge base names
-  @UseInterceptors(AgentAutocompleteInterceptor)
-  @UseInterceptors(KnowledgeAutocompleteInterceptor)
+  @UseInterceptors(
+    AgentAutocompleteInterceptor,
+    KnowledgeAutocompleteInterceptor,
+  )
   @SlashCommand({
     name: 'delete',
     description: 'Delete an agent or a knowledge base',

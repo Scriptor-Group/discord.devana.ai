@@ -1,5 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Message, PermissionFlagsBits } from 'discord.js';
+import {
+  ActionRowBuilder,
+  Message,
+  ModalActionRowComponent,
+  ModalActionRowComponentBuilder,
+  ModalBuilder,
+  PermissionFlagsBits,
+  TextInputBuilder,
+  TextInputStyle,
+} from 'discord.js';
 import {
   Context,
   MessageCommand,
@@ -49,6 +58,32 @@ export class DiscordContext {
           'discord.context.create_agent.OWN_MESSAGE_ERROR',
         ),
       });
+
+    const modal = new ModalBuilder({
+      custom_id: 'agent-modal',
+      title: 'Agent creation',
+      components: [
+        new ActionRowBuilder<ModalActionRowComponentBuilder>({
+          components: [
+            new TextInputBuilder({
+              custom_id: 'agent-name',
+              placeholder: 'Agent name (optional)',
+              label: 'Agent name',
+              required: false,
+            }),
+            new TextInputBuilder({
+              custom_id: 'agent-description',
+              placeholder: 'Agent more informations',
+              label: 'Describe the agent',
+              style: TextInputStyle.Paragraph,
+              required: false,
+            }),
+          ],
+        }),
+      ],
+    });
+
+    await interaction.showModal(modal);
 
     // We let the user know that we are creating the agent
     interaction.reply({
