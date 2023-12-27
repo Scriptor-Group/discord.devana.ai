@@ -1,0 +1,27 @@
+services:
+  api:
+    container_name: discord-devana
+    image: discord-devana-dev
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Target the dev stage
+      target: dev
+    # Mount host directory to docker container to support watch mode
+    volumes:
+      - .:/app
+      # This ensures that the NestJS container manages the node_modules folder
+      # rather than synchronizes it with the host machine
+      - /app/node_modules
+    env_file:
+      - docker.env
+    ports:
+      - 3000:3000
+    networks:
+      - nest
+    command: npx nest start --watch
+
+networks:
+  nest:
+    driver: bridge
