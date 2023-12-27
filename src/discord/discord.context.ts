@@ -1,5 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Message, PermissionFlagsBits } from 'discord.js';
+import {
+  ActionRowBuilder,
+  Message,
+  ModalActionRowComponent,
+  ModalActionRowComponentBuilder,
+  ModalBuilder,
+  PermissionFlagsBits,
+  TextInputBuilder,
+  TextInputStyle,
+} from 'discord.js';
 import {
   Context,
   MessageCommand,
@@ -9,6 +18,7 @@ import {
 import { DiscordService } from './discord.service';
 import { DevanaService } from 'src/devana/devana.service';
 import { I18nService } from 'src/i18n/i18n.service';
+import { ConfigService } from '@nestjs/config';
 
 // A context is a class used to handle the context menu commands
 @Injectable()
@@ -18,6 +28,7 @@ export class DiscordContext {
   constructor(
     private discordService: DiscordService,
     private devanaService: DevanaService,
+    private configService: ConfigService,
     private i18n: I18nService,
   ) {
     this.logger.log('DiscordContext initiated');
@@ -47,6 +58,32 @@ export class DiscordContext {
           'discord.context.create_agent.OWN_MESSAGE_ERROR',
         ),
       });
+
+    /* const modal = new ModalBuilder({
+      custom_id: 'agent-modal',
+      title: 'Agent creation',
+      components: [
+        new ActionRowBuilder<ModalActionRowComponentBuilder>({
+          components: [
+            new TextInputBuilder({
+              custom_id: 'agent-name',
+              placeholder: 'Agent name (optional)',
+              label: 'Agent name',
+              required: false,
+            }),
+            new TextInputBuilder({
+              custom_id: 'agent-description',
+              placeholder: 'Agent more informations',
+              label: 'Describe the agent',
+              style: TextInputStyle.Paragraph,
+              required: false,
+            }),
+          ],
+        }),
+      ],
+    });
+
+    await interaction.showModal(modal); */
 
     // We let the user know that we are creating the agent
     interaction.reply({
@@ -139,7 +176,7 @@ export class DiscordContext {
     // Here we use a default Devana AI to ask it to get a short description
     // of the message content, it will be used as the knowledge base name
     const question = await this.devanaService.askAgent(
-      'clqh6r78100200trlvthv3sf7',
+      this.configService.get('DEVANA_AGENT_BASE'),
       encodeURIComponent(
         `Define the following text in maximum two words without using special characters : "${message.content}"`,
       ),

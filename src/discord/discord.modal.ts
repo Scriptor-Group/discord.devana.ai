@@ -8,6 +8,7 @@ export class DiscordModal {
   // TODO: Implement the agent modal in order to configure
   // the agent with more details, we will use AI to get all
   // the data we need from the input
+  // Salut
   @Modal('agent')
   public async onConfigModal(@Context() [interaction]: ModalContext) {
     return interaction.reply({ content: 'Pong!' });
