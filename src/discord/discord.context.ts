@@ -5,7 +5,6 @@ import {
   ModalActionRowComponentBuilder,
   ModalBuilder,
   PermissionFlagsBits,
-  StringSelectMenuBuilder,
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';

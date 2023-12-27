@@ -2,5 +2,6 @@
     "codemetrics.basics.CodeLensHiddenUnder": 9,
     "codemetrics.basics.ComplexityLevelNormal": 15,
     "codemetrics.basics.ComplexityLevelHigh": 21,
-    "codemetrics.basics.ComplexityLevelExtreme": 34
+    "codemetrics.basics.ComplexityLevelExtreme": 34,
+    "codemetrics.luaconfiguration.BinaryExpression": 0
 }
