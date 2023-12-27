@@ -1,13 +1,15 @@
 import { HttpService } from '@nestjs/axios';
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Attachment, Collection, Snowflake } from 'discord.js';
-import { firstValueFrom } from 'rxjs';
+import EventSource from 'eventsource';
+import { Observable, firstValueFrom } from 'rxjs';
 import { I18nService } from 'src/i18n/i18n.service';
 
 // Devana service is used to communicate with Devana API
 @Injectable()
 export class DevanaService {
+  private logger = new Logger(DevanaService.name);
   public token: string;
   // Default models are used to validate model provided by user
   private defaultModels = {
@@ -38,7 +40,7 @@ export class DevanaService {
   ) {}
 
   /**
-   * Will be used to get token from Devana API using credentials provided in .env file
+   * Get token from Devana API using credentials provided in .env file
    * @param force Boolean will regenerate a new token if set to true
    * @returns String token
    */
@@ -79,7 +81,7 @@ export class DevanaService {
   }
 
   /**
-   * Will be used to ask Devana API to ask an agent a question
+   * Ask Devana API to ask an agent a question
    * @param agentId String agent id
    * @param prompt String question
    * @param chatId String chat id (not necessary)
@@ -110,7 +112,68 @@ export class DevanaService {
   }
 
   /**
-   * Will be used to get all chats with agents from Devana API
+   * Ask Devana API to ask an agent a question using stream (EventSource)
+   * @param agentId String agent id
+   * @param prompt String question
+   * @param chatId String chat id (not necessary)
+   * @returns Observable<any>
+   */
+  async askAgentStream(agentId: string, prompt: string, chatId?: string) {
+    // We use URLSearchParams to create a query string
+    const params = new URLSearchParams({
+      message: prompt,
+      chatId: chatId || '',
+      files: '',
+      token: this.token,
+    });
+
+    // We return an observable because we will use it as a stream
+    return new Observable<{ text: string }>((observer) => {
+      // We create a new EventSource with the agent id and the query string to ask Devana
+      const source = new EventSource(
+        `https://api.devana.ai/chat/${agentId}?${params.toString()}`,
+      );
+
+      let content = '';
+      // We start with a lastSent of 500ms ago to let 1s to the agent to generate an answer
+      let lastSent = Date.now() - 500;
+
+      // We listen to the message event to get the answer from Devana
+      source.onmessage = (event) => {
+        // We check if the message is a JSON or a text and set it as content
+        const message = event.data.startsWith('[JSON]') ? '' : event.data;
+        if (!message) return;
+
+        content += message;
+
+        // We check if the last message was sent less than 1.5s ago (not to flood discord)
+        if (Date.now() - lastSent < 1500) return;
+        lastSent = Date.now();
+
+        observer.next({
+          text: content.replace(/\\n/g, `\n`),
+        });
+      };
+
+      // We listen to the error event to close the stream, this is a trick from Devana API
+      // to close the stream when the agent has no more answers
+      source.onerror = () => {
+        source.close();
+        // We send the last message to the observer
+        observer.next({
+          text: content.replace(/\\n/g, `\n`),
+        });
+        observer.complete();
+      };
+
+      return () => {
+        source.close();
+      };
+    });
+  }
+
+  /**
+   * Get all chats with agents from Devana API
    * @param take Number number of chats to get
    * @param skip Number number of chats to skip
    * @param search String search query
@@ -145,7 +208,7 @@ export class DevanaService {
   }
 
   /**
-   * Will be used to get all agents from Devana API
+   * Get all agents from Devana API
    * @param search String search query
    * @returns Promise<any>
    */

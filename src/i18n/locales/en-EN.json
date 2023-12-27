@@ -54,7 +54,9 @@
     },
     "gateway": {
       "message_create": {
-        "THREAD_ANNOUNCE": "This message is automaticaly sent. In order to continue the discussion mention me."
+        "THREAD_ANNOUNCE": "This message is automaticaly sent. In order to continue the discussion mention me.",
+        "THINKING": "Let me think...",
+        "NO_ANSWER": "I don't have an answer for that"
       }
     }
   }
