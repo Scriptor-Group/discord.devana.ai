@@ -66,18 +66,39 @@ export class DiscordGateway {
 
     if (!channelAgent) return;
 
-    const question = await this.devanaService.askAgent(channelAgent, content);
-
-    if (!question) return;
-
-    return message.reply(
-      message.channel.isThread() && !mentionned
-        ? [
-            this.i18n.t('en', 'discord.gateway.message_create.THREAD_ANNOUNCE'),
-            '',
-            question.text,
-          ].join('\n')
-        : question.text,
+    // We send a message to say that the bot is thinking (to let the eventsource open)
+    const response = await message.reply(
+      `*${this.i18n.t('en', 'discord.gateway.message_create.THINKING')}*`,
     );
+    response.channel.sendTyping();
+
+    const observable = await this.devanaService.askAgentStream(
+      channelAgent,
+      content,
+    );
+
+    if (!observable)
+      return response.edit(
+        this.i18n.t('en', 'discord.gateway.message_create.NO_ANSWER'),
+      );
+
+    // We subscribe to the observable to get the answer
+    observable.subscribe(({ text }) => {
+      response.edit(
+        // If we are in a thread we must tell the user that this in an automatic answer
+        message.channel.isThread() && !mentionned
+          ? [
+              text,
+              '',
+              this.i18n.t(
+                'en',
+                'discord.gateway.message_create.THREAD_ANNOUNCE',
+              ),
+            ].join('\n')
+          : text,
+      );
+    });
+
+    return message;
   }
 }

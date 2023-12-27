@@ -54,7 +54,9 @@
     },
     "gateway": {
       "message_create": {
-        "THREAD_ANNOUNCE": "Message auto généré, mentionnez moi pour continuer la discussion."
+        "THREAD_ANNOUNCE": "Message auto généré, mentionnez moi pour continuer la discussion.",
+        "THINKING": "Je réfléchis ...",
+        "NO_ANSWER": "Je n'ai pas de réponse pour le moment"
       }
     }
   }
