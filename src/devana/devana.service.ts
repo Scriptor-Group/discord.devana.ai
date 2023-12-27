@@ -40,7 +40,7 @@ export class DevanaService {
   ) {}
 
   /**
-   * Will be used to get token from Devana API using credentials provided in .env file
+   * Get token from Devana API using credentials provided in .env file
    * @param force Boolean will regenerate a new token if set to true
    * @returns String token
    */
@@ -81,7 +81,7 @@ export class DevanaService {
   }
 
   /**
-   * Will be used to ask Devana API to ask an agent a question
+   * Ask Devana API to ask an agent a question
    * @param agentId String agent id
    * @param prompt String question
    * @param chatId String chat id (not necessary)
@@ -112,7 +112,7 @@ export class DevanaService {
   }
 
   /**
-   * Will be used to ask Devana API to ask an agent a question using stream (EventSource)
+   * Ask Devana API to ask an agent a question using stream (EventSource)
    * @param agentId String agent id
    * @param prompt String question
    * @param chatId String chat id (not necessary)
@@ -135,7 +135,8 @@ export class DevanaService {
       );
 
       let content = '';
-      let lastSent = Date.now() - 1500;
+      // We start with a lastSent of 500ms ago to let 1s to the agent to generate an answer
+      let lastSent = Date.now() - 500;
 
       // We listen to the message event to get the answer from Devana
       source.onmessage = (event) => {
@@ -172,7 +173,7 @@ export class DevanaService {
   }
 
   /**
-   * Will be used to get all chats with agents from Devana API
+   * Get all chats with agents from Devana API
    * @param take Number number of chats to get
    * @param skip Number number of chats to skip
    * @param search String search query
@@ -207,7 +208,7 @@ export class DevanaService {
   }
 
   /**
-   * Will be used to get all agents from Devana API
+   * Get all agents from Devana API
    * @param search String search query
    * @returns Promise<any>
    */
